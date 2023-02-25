@@ -1,4 +1,7 @@
 env/
-assets/processed/
+assets/processed/*.json
+assets/processed/*.csv
+assets/processed/*.parquet
+assets/processed/*.log
 .vscode
 *.ipynb
