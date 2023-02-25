@@ -1,36 +1,38 @@
+.PHONY: run install clean distclean preproc build-preproc run-preproc serve-pipeline up train lint format
+
 .DEFAULT: run
 
-run:
-	make environment
-	make format
-	make lint
-	make preproc
-	#make train
-	make serve-pipeline
+run: install format preproc serve-pipeline
 
-# create and update the local environment
-environment:
-	test -d env || python -m venv env # will only run if env is not present
-	make install
+VENV := env
+REQUIREMENTS := requirements.txt
 
-vendored-folder := env
-install: $(vendored-folder)
+# Create the virtual environment if it doesn't exist yet
+$(VENV)/bin/activate:
+	python -m venv $(VENV)
 
-$(vendored-folder): requirements.txt
-	# only runs if the requirements.txt file has changed
-	\rm -rf $(vendored-folder)  # the \ avoids using my local alias for rm
-	pip install --upgrade pip
-	pip install -r requirements.txt -t $(vendored-folder)
+# Install the dependencies and create the virtual environment if necessary
+install: $(VENV)/bin/activate $(REQUIREMENTS)
+	$(VENV)/bin/pip install --upgrade pip
+	$(VENV)/bin/pip install -r $(REQUIREMENTS)
 
-preproc:
-	make build-preproc	
-	make run-preproc
+# Remove the installed dependencies, but keep the virtual environment
+clean:
+	$(VENV)/bin/pip freeze | xargs $(VENV)/bin/pip uninstall -y
+	@echo "Cleaned up installed dependencies"
+
+# Remove the virtual environment and installed dependencies
+distclean:
+	rm -rf $(VENV)
+	@echo "Removed virtual environment"
+
+preproc: build-preproc run-preproc
 
 build-preproc:
 	docker build -t abbrev:preprocess -f ./pipeline/preprocess/preproc.Dockerfile .
 
 run-preproc:
-	docker run --rm -v $$(pwd)/assets:/app/assets abbrev:preprocess --project=. process.jl
+	docker run --rm -v $(CURDIR)/assets:/app/assets abbrev:preprocess --project=. process.jl
 
 serve-pipeline:
 	docker-compose -f pipeline/docker-compose.yml up --build
@@ -38,15 +40,13 @@ serve-pipeline:
 up:
 	docker-compose -f pipeline/docker-compose.yml up
 
-lint:
-	flake8 pipeline
-	mypy --no-strict-optional --warn-unreachable --show-error-codes --ignore-missing-imports pipeline
-
 train:
 
-format:
-	isort -v pipeline
-	black pipeline
+lint: $(VENV)/bin/activate
+	$(VENV)/bin/flake8 pipeline
+	$(VENV)/bin/mypy --no-strict-optional --warn-unreachable --show-error-codes --ignore-missing-imports pipeline
 
 
-
+format: $(VENV)/bin/activate
+	$(VENV)/bin/black pipeline
+	$(VENV)/bin/isort -v pipeline
