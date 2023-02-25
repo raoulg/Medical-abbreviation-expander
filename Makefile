@@ -2,6 +2,8 @@
 
 run:
 	make environment
+	make format
+	make lint
 	make preproc
 	#make train
 	make serve-pipeline
