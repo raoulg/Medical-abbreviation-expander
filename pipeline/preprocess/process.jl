@@ -62,7 +62,7 @@ function create_trainset(corpuspath, mapping, processeddir)
     close(csvfile)
 end
 
-function parse_files()
+function main()
     args = parse_commandline()
     datadir = args["datadir"]
     processeddir = args["processeddir"]
@@ -81,4 +81,6 @@ function parse_files()
     flush(io)
 end
 
-parse_files()
+if abspath(PROGRAM_FILE) == @__FILE__
+    main()
+end
