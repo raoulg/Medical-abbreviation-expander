@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseModel
 
 
@@ -6,3 +8,8 @@ class Settings(BaseModel):
     hidden: int = 128
     aggtype: str = "mean"
     nonlinear: str = "GRN"
+
+
+class FileSettings(BaseModel):
+    bucket: str
+    datadir: Path
