@@ -1,5 +1,9 @@
 from io import BytesIO
+from pathlib import Path
+from typing import Iterator, Tuple
 
+import polars as pl
+from loguru import logger
 from settings import FileSettings
 
 
@@ -58,13 +62,13 @@ class FileHandler:
 
         return data
 
-    def load_from_blob(self, filepath: Path, backend: str = "polars") -> DataFrame:
-        bytestream = self._get_io(filepath)
-        if backend == "polars":
-            data = pl.read_parquet(bytestream)
-        else:
-            data = pd.read_parquet(bytestream)
-        return data
+    # def load_from_blob(self, filepath: Path, backend: str = "polars") -> DataFrame:
+    #     bytestream = self._get_io(filepath)
+    #     if backend == "polars":
+    #         data = pl.read_parquet(bytestream)
+    #     else:
+    #         data = pd.read_parquet(bytestream)
+    #     return data
 
     def _get_buf_size(self, buf: BytesIO) -> Tuple[int, BytesIO]:
         buf.seek(0, 2)
@@ -72,12 +76,12 @@ class FileHandler:
         buf.seek(0)
         return total_size, buf
 
-    def save_to_blob(self, df: pl.DataFrame, filepath: Path) -> None:
-        bytestream = BytesIO()
-        logger.info("write to io")
-        df.write_parquet(bytestream)
-        total_size, bytestream = self._get_buf_size(bytestream)
-        logger.info(f"Total size {(total_size / (1024*1024)):.3f} Mb")
-        blob = self._get_blob(filepath)
-        blob.upload_from_file(bytestream)
-        logger.success(f"Finished {filepath}")
+    # def save_to_blob(self, df: pl.DataFrame, filepath: Path) -> None:
+    #     bytestream = BytesIO()
+    #     logger.info("write to io")
+    #     df.write_parquet(bytestream)
+    #     total_size, bytestream = self._get_buf_size(bytestream)
+    #     logger.info(f"Total size {(total_size / (1024*1024)):.3f} Mb")
+    #     blob = self._get_blob(filepath)
+    #     blob.upload_from_file(bytestream)
+    #     logger.success(f"Finished {filepath}")
