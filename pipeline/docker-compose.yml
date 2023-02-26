@@ -9,7 +9,8 @@ services:
     networks:
       - mynetwork
     volumes:
-      - ../artefacts/mlflow:/mlflow
+      - ../artefacts/mlflow:/app/mlflow
+      - ../assets/processed:/app/assets/processed
   gui:
     build:
       context: ./gui
@@ -21,12 +22,10 @@ services:
     networks:
       - mynetwork
     volumes:
-      - ../artefacts/mlflow:/mlflow
+      - ../artefacts/mlflow:/app/mlflow
     
 volumes:
   mlflow:
-    external: true
-    name: mlflow
 
 networks:
   mynetwork:
