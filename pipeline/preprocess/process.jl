@@ -17,7 +17,7 @@ function parse_commandline()
         default = "assets/processed/"
         "--corpusfile", "-c"
         help = "corpus.txt file with text lines"
-        default = "corpus.txt"
+        default = "big_corpus.txt"
         "--testfile", "-t"
         help = "csv file with text lines"
         default = "test_set.csv"

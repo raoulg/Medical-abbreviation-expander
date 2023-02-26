@@ -3,5 +3,8 @@ assets/processed/*.json
 assets/processed/*.csv
 assets/processed/*.parquet
 assets/processed/*.log
+assets/raw/big_corpus.txt
 .vscode
 *.ipynb
+.DS_Store
+__pycache__

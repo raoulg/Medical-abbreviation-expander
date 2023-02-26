@@ -8,4 +8,5 @@ COPY assets /app/assets
 COPY pipeline/preprocess/process.jl .
 RUN julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();'
 
+
 ENTRYPOINT ["julia"]

@@ -22,7 +22,8 @@ class Vectorizer(nn.Module):
         assert self.aggtype in [
             "mean",
             "sum",
-        ], "Aggregation type must be 'mean' or 'sum'"
+            "none",
+        ], "Aggregation type must be 'mean', 'sum' or 'none'"
 
         for param in self.roberta.parameters():
             param.requires_grad = False
@@ -32,7 +33,8 @@ class Vectorizer(nn.Module):
             return torch.mean(hidden_states, dim=1).squeeze()
         if self.aggtype == "sum":
             return torch.mean(hidden_states, dim=1).squeeze()
-        return hidden_states
+        else:
+            return hidden_states
 
     def _nonlinear(self, hidden_states: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError()
@@ -52,7 +54,8 @@ class AbbrvtExpander(Vectorizer):
             batch,
             return_tensors="pt",
             padding=True,
-        )
+        )["input_ids"]
         vector = self.roberta(inputs).last_hidden_state
+        vector = self._agg(vector)
         vector = self._nonlinear(vector)
         return vector

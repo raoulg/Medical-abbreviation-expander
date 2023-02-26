@@ -14,4 +14,4 @@ ENV STREAMLIT_SERVER_ENABLE_CORS=false
 # Expose port 8501
 EXPOSE 8501
 
-CMD ["streamlit", "run", "--server.enableCORS", "false", "show.py"]
+ENTRYPOINT ["streamlit", "run", "show.py"]
