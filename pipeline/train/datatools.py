@@ -1,12 +1,13 @@
 import json
-import random
+from collections import defaultdict
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Dict, Iterator, List, Sequence, Tuple
 
 import numpy as np
 import polars as pl
+import torch
 from loguru import logger
-from settings import FileSettings, DataSettings
+from settings import DataSettings, FileSettings
 
 
 def walk_dir(path: Path) -> Iterator:
@@ -92,12 +93,14 @@ class BaseDataset:
 
     def __getitem__(self, idx: int) -> Tuple:
         return self.dataset[idx]
-    
+
+
 class TxtDataset(BaseDataset):
     def process_data(self, data: pl.DataFrame) -> None:
-        X = data[self.settings.txtcol].to_list()
+        X = data[self.settings.txtcol].to_list()  # noqa N806
         y = data[self.settings.targetcol].to_list()
         self.dataset = [*zip(X, y)]
+
 
 class Datastreamer:
     """This datastreamer wil never stop
@@ -126,16 +129,21 @@ class Datastreamer:
     def reset_index(self) -> None:
         self.index_list = np.random.permutation(self.size)
         self.index = 0
-    
-    def _surjection(self, mapping) -> Dict:
+
+    def _surjection(self, mapping: Dict) -> Dict:
         inverted_dict = defaultdict(list)
         for key, value in mapping.items():
             inverted_dict[value].append(key)
-        surject = {k:inverted_dict[v] for k,v in mapping.items()}
+        surject = {k: tuple(inverted_dict[v]) for k, v in mapping.items()}
         return surject
-    
-    def _preprocess(self):
-        pass
+
+    def _preprocess(
+        self, batch: Sequence[Tuple]
+    ) -> Tuple[Tuple[str], List[Tuple[str]], torch.Tensor]:
+        X, y = zip(*batch)  # noqa N806
+        y_ = [self.surject[val] for val in y]
+        indices = torch.tensor([y_[i].index(y[i]) for i in range(len(y))])
+        return X, y_, indices
 
     def batchloop(self) -> Sequence[Tuple]:
         batch = []
@@ -150,5 +158,5 @@ class Datastreamer:
             if self.index > (self.size - self.batchsize):
                 self.reset_index()
             batch = self.batchloop()
-            X, Y = self._preprocess(batch)  # noqa N806
-            yield X, Y
+            X, candidates, y = self._preprocess(batch)  # noqa N806
+            yield X, candidates, y

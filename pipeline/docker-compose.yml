@@ -22,17 +22,6 @@ services:
       - mynetwork
     volumes:
       - mlflow:/mlflow
-  train:
-    build:
-      context: ./train
-      dockerfile: train.Dockerfile
-    networks:
-      - mynetwork
-    volumes:
-      - mlflow:/mlflow
-      - ../assets/processed:/data/assets/processed
-    environment:
-      - MLFLOW_TRACKING_URI=file:/mlflow
     
 volumes:
   mlflow:

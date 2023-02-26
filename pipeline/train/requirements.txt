@@ -1,5 +1,6 @@
 torch
 transformers
 pydantic
-polars
 loguru
+tensorboard
+polars
