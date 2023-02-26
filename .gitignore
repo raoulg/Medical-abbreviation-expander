@@ -11,3 +11,4 @@ assets/model/models--CLTL--MedRoBERTa.nl/
 __pycache__
 pipeline/train/logs/
 artefacts/mlflow/*.pt
+pipeline/logs
