@@ -11,9 +11,9 @@ help:
 	@echo "make run"
 	@echo "		installs the environment, lint the code, preprocess/train and serve the gui"
 	@echo "make install"
-	@echo "		when the requirements.txt file exists/has changed, this will install the requirements"
+	@echo "		when the requirements.txt file exists/has changed, this will update the requirements"
 	@echo "make clean"
-	@echo "		Removes dependencies"
+	@echo "		Removes pip dependencies and processed files"
 	@echo "make distclean"
 	@echo "		Removes the full environment"
 	@echo "make preproc"
@@ -21,7 +21,9 @@ help:
 	@echo "make serve"
 	@echo "		Uses docker-compose to build a network with the api, gui and inference containers"
 	@echo "make up"
-	@echo "		After make serve has been run, make up is a fast way to spin up the gui"
+	@echo "		After make serve (or make run), this is a fast way to spin up the gui"
+	@echo "make stop"
+	@echo "		stops the server"
 	@echo "make train"
 	@echo "		Trains the network on preprocessed data"
 	@echo "make lint"
@@ -30,8 +32,12 @@ help:
 	@echo "		formats the code"
 	@echo "make tail"
 	@echo "		Show tail of the docker-compose logs"
+	@echo "make big"
+	@echo "		For stress-testing, makes the corpus.txt file 100_000 times as big"
+	@echo "make download-model"
+	@echo "		Downloads the pretrained MedRoBERTa from huggingface"
 
-run: install download-model format preproc serve
+run: install download-model format lint preproc train serve
 	@echo "$(GREEN)Finished running the pipeline$(NC)"
 
 VENV := env
@@ -90,6 +96,9 @@ stop:
 	docker-compose -f pipeline/docker-compose.yml down
 	@echo "$(GREEN)Finished stopping the server$(NC)"
 
+train: build-train run-train
+	@echo "$(GREEN)Finished training$(NC)"
+
 build-train:
 	@echo "$(GREEN)building the trainimage$(NC)"
 	docker build -f pipeline/train/train.Dockerfile -t train:latest .
@@ -103,7 +112,9 @@ run-train:
 lint: $(VENV)/bin/activate
 	@echo "$(GREEN)Linting the code$(NC)"
 	$(VENV)/bin/flake8 pipeline
-	$(VENV)/bin/mypy --no-strict-optional --warn-unreachable --show-error-codes --ignore-missing-imports pipeline
+	$(VENV)/bin/mypy --no-strict-optional --warn-unreachable --show-error-codes --ignore-missing-imports pipeline/api
+	$(VENV)/bin/mypy --no-strict-optional --warn-unreachable --show-error-codes --ignore-missing-imports pipeline/gui
+	$(VENV)/bin/mypy --no-strict-optional --warn-unreachable --show-error-codes --ignore-missing-imports pipeline/train
 	@echo "$(GREEN)Finished linting the code$(NC)"
 
 format: $(VENV)/bin/activate
