@@ -2,7 +2,7 @@ GREEN := \033[0;32m
 RED := \033[0;31m
 NC := \033[0m
 
-.PHONY: run clean distclean preproc build-preproc run-preproc serve up train tail
+.PHONY: run clean distclean preproc build-preproc run-preproc serve up stop build-train run-train tail check-lfs
 
 .DEFAULT: help
 
@@ -31,7 +31,7 @@ help:
 	@echo "make tail"
 	@echo "		Show tail of the docker-compose logs"
 
-run: install format preproc serve
+run: install download-model format preproc serve
 	@echo "$(GREEN)Finished running the pipeline$(NC)"
 
 VENV := env
@@ -52,7 +52,9 @@ clean:
 	@echo "$(GREEN)Finished removing installed dependencies$(NC)"
 	@echo "$(RED)Removing all processed files in assets/processed$(NC)"
 	find assets/processed -not -name .gitkeep -delete
-	rm -f assets/raw/big_corpus.txt
+	\rm -f assets/raw/big_corpus.txt
+	\rm -rf assets/model/models--CLTL--MedRoBERTa.nl
+
 
 distclean:
 	@echo "$(RED)Removing virtual environment$(NC)"
@@ -88,10 +90,15 @@ stop:
 	docker-compose -f pipeline/docker-compose.yml down
 	@echo "$(GREEN)Finished stopping the server$(NC)"
 
-train:
-	@echo "$(GREEN)Training the model$(NC)"
-	# command to train the model goes here
-	@echo "$(GREEN)Finished training the model$(NC)"
+build-train:
+	@echo "$(GREEN)building the trainimage$(NC)"
+	docker build -f pipeline/train/train.Dockerfile -t train:latest .
+
+run-train:
+	docker run --rm \
+		-v $(CURDIR)/assets:/app/assets \
+		-v $(CURDIR)/pipeline/logs:/app/logs \
+		-v $(CURDIR)/artefacts/mlflow:/app/mlflow train:latest
 
 lint: $(VENV)/bin/activate
 	@echo "$(GREEN)Linting the code$(NC)"
@@ -117,3 +124,16 @@ big_corpus.txt: assets/raw/corpus.txt
 
 big: big_corpus.txt
 	@echo "$(GREEN)Build complete.$(NC)"
+
+check-lfs:
+	@if ! git lfs env >/dev/null 2>&1; then \
+		echo "Git LFS is not installed. Please run 'make install-lfs' to install it."; \
+		exit 1; \
+	fi
+
+download-model: check-lfs assets/model/models--CLTL--MedRoBERTa.nl
+
+assets/model/models--CLTL--MedRoBERTa.nl:
+	@echo "$(GREEN)Downloading MedRoBERTa.nl model...$(NC)"
+	git clone https://huggingface.co/CLTL/MedRoBERTa.nl.git assets/model/models--CLTL--MedRoBERTa.nl
+

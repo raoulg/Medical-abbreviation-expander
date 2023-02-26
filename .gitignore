@@ -4,6 +4,7 @@ assets/processed/*.csv
 assets/processed/*.parquet
 assets/processed/*.log
 assets/raw/big_corpus.txt
+assets/model/models--CLTL--MedRoBERTa.nl/
 .vscode
 *.ipynb
 .DS_Store
