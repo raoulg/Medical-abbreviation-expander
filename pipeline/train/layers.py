@@ -14,9 +14,13 @@ class Vectorizer(nn.Module):
         self.model_path = modelsettings.modelpath
 
         self.roberta = RobertaModel.from_pretrained(
-            self.model_path, output_hidden_states=False, cache_dir=modelsettings.cache_dir
+            self.model_path,
+            output_hidden_states=False,
+            cache_dir=modelsettings.cache_dir,
         )
-        self.tokenizer = RobertaTokenizer.from_pretrained(self.model_path, cache_dir=modelsettings.cache_dir)
+        self.tokenizer = RobertaTokenizer.from_pretrained(
+            self.model_path, cache_dir=modelsettings.cache_dir
+        )
         self.vectordim = modelsettings.vectordim
         self.hidden = modelsettings.hidden
 

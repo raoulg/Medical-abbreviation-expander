@@ -32,9 +32,11 @@ class DataSettings(BaseModel):
     trainfrac: float
     batchsize: int
 
+
 class FileTypes(BaseModel):
     PARQUET: str = ".parq"
     CSV: str = ".csv"
+
 
 filetypes = FileTypes()
 
@@ -60,10 +62,7 @@ modelsettings = Settings(
     eval_steps=10,
     learning_rate=1e-3,
     modeldir=Path("mlflow"),
-    cache_dir=Path("assets/model")
+    cache_dir=Path("assets/model"),
 )
 
-datasettings = DataSettings(
-    targetcol="label", txtcol="txt", trainfrac=0.8, batchsize=32
-)
-
+datasettings = DataSettings(targetcol="label", txtcol="txt", trainfrac=0.8, batchsize=8)

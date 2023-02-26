@@ -1,8 +1,9 @@
 from pathlib import Path
-from typing import Callable, Dict, Iterator, List, Protocol, Tuple
+from typing import Callable, Dict, Iterator, List, Protocol, Tuple, Type
 
 # import mlflow
 import torch
+from layers import AbbrvtExpander
 from loguru import logger
 from metrics import Metric
 from torch.utils.tensorboard import SummaryWriter
@@ -19,18 +20,18 @@ class GenericModel(Protocol):
 
 
 def trainbatches(
-    model: GenericModel,
+    model: Type[AbbrvtExpander],
     traindatastreamer: Iterator,
     loss_fn: Callable,
     optimizer: torch.optim.Optimizer,
     train_steps: int,
 ) -> float:
-    model.train()
+    model.train()  # type: ignore
     train_loss: float = 0.0
     for _ in tqdm(range(train_steps), colour="#1e4706"):
         x, cand, y = next(iter(traindatastreamer))
         optimizer.zero_grad()
-        yhat = model(x, cand)
+        yhat = model(x, cand)  # type: ignore
         loss = loss_fn(yhat, y)
         loss.backward()
         optimizer.step()
@@ -40,22 +41,23 @@ def trainbatches(
 
 
 def evalbatches(
-    model: GenericModel,
+    model: Type[AbbrvtExpander],
     valdatastreamer: Iterator,
     loss_fn: Callable,
     metrics: List[Metric],
     eval_steps: int,
 ) -> Tuple[Dict[str, float], float]:
-    model.eval()
+    model.eval()  # type: ignore
     test_loss: float = 0.0
     metric_dict: Dict[str, float] = {}
     for _ in range(eval_steps):
         x, cand, y = next(iter(valdatastreamer))
-        yhat = model(x, cand)
+        yhat = model(x, cand)  # type: ignore
         test_loss += loss_fn(yhat, y).detach().numpy()
         for m in metrics:
             metric_dict[str(m)] = (
-                metric_dict.get(str(m), 0.0) + m(y, yhat).detach().numpy()
+                metric_dict.get(str(m), 0.0)
+                + m(y, yhat).detach().numpy()  # type:ignore
             )
 
     test_loss /= eval_steps
@@ -66,7 +68,7 @@ def evalbatches(
 
 def trainloop(
     epochs: int,
-    model: GenericModel,
+    model: Type[AbbrvtExpander],
     optimizer: torch.optim.Optimizer,
     learning_rate: float,
     loss_fn: Callable,
@@ -80,7 +82,7 @@ def trainloop(
     factor: float = 0.9,
     tunewriter: List[str] = ["tensorboard", "gin", "mlflow", "ray"],
     weight_decay: float = 1e-5,
-) -> Tuple[GenericModel, float]:
+) -> Tuple[Type[AbbrvtExpander], float]:
     """
 
     Args:
@@ -113,8 +115,8 @@ def trainloop(
     """
 
     optimizer_: torch.optim.Optimizer = optimizer(
-        model.parameters(), lr=learning_rate, weight_decay=weight_decay
-    )  # type: ignore
+        model.parameters(), lr=learning_rate, weight_decay=weight_decay  # type: ignore
+    )
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer_,

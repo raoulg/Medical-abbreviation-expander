@@ -1,7 +1,9 @@
+from typing import Type
+
 import torch
 from torch.utils.data import DataLoader
 
-Tensor = torch.Tensor
+Tensor = Type[torch.Tensor]
 
 
 class Metric:
@@ -52,4 +54,4 @@ class Accuracy(Metric):
         return "Accuracy"
 
     def __call__(self, y: Tensor, yhat: Tensor) -> Tensor:
-        return (yhat.argmax(dim=1) == y).sum() / len(yhat)
+        return (yhat.argmax(dim=1) == y).sum() / len(yhat)  # type: ignore
