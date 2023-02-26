@@ -32,6 +32,11 @@ class DataSettings(BaseModel):
     trainfrac: float
     batchsize: int
 
+class FileTypes(BaseModel):
+    PARQUET: str = ".parq"
+    CSV: str = ".csv"
+
+filetypes = FileTypes()
 
 root = (Path(__file__).parent / "../..").resolve()
 
@@ -61,3 +66,4 @@ modelsettings = Settings(
 datasettings = DataSettings(
     targetcol="label", txtcol="txt", trainfrac=0.8, batchsize=32
 )
+

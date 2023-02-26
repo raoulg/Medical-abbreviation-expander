@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 import torch
 from loguru import logger
-from settings import DataSettings, FileSettings
+from settings import DataSettings, FileSettings, filetypes
 
 
 def walk_dir(path: Path) -> Iterator:
@@ -51,9 +51,26 @@ class FileHandler:
         return maps, train
 
     def load_mapping(self, filepath: Path) -> Dict:
+        """This is a mapping from expansions to possible abbreviations.
+        The mapping from expansions to abbreviations is 
+            - surjective (meaning every expansion is mapped to at least one abbreviation)
+            - non-injective (meaning that it is not the case that there is a one-to-one
+                relation where every expansion is mapped to at most one abbreviation)
+        The filepath is a json file, which is flattened to a dict. 
+        This flattening assumes there are NEVER expansions mapping to more than one abbreviation
+
+        Args:
+            filepath (Path): json file with the mapping
+
+        Returns:
+            Dict 
+        """
         with open(filepath, "r") as f:
             data = json.load(f)
         result = {}
+
+        # this flattening assumes there are never expansions mapping 
+        # to more than one abbreviation
         for item in data:
             for key, value in item.items():
                 result[key] = value
@@ -62,12 +79,12 @@ class FileHandler:
     def load_data(self, filepath: Path) -> pl.DataFrame:
         logger.info(f"loading file from {filepath}")
         try:
-            if self.datasuffix == ".parq":
+            if self.datasuffix == filetypes.PARQUET:
                 data = pl.read_parquet(filepath)
-            elif self.datasuffix == ".csv":
+            elif self.datasuffix == filetypes.CSV:
                 data = pl.read_csv(filepath, sep=self.sep)
             else:
-                raise ValueError("Unsupported file format")
+                raise ValueError(f"Expected fileformat of {filetypes.PARQUET} or {filetypes.CSV}")
 
         except (IOError, FileNotFoundError) as e:
             raise IOError(f"Failed to load file {filepath}") from e
