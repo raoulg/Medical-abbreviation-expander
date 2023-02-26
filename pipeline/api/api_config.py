@@ -1,2 +1,2 @@
 MODELVERSION = "20230226-1653"
-MODELDIR = "/mlflow"
+MODELDIR = "/app/mlflow"
