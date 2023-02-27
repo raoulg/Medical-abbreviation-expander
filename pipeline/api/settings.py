@@ -36,6 +36,7 @@ class DataSettings(BaseModel):
 class FileTypes(BaseModel):
     PARQUET: str = ".parq"
     CSV: str = ".csv"
+    PYTORCHMODEL: str = ".pt"
 
 
 filetypes = FileTypes()

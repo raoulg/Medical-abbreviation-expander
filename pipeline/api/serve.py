@@ -1,9 +1,11 @@
+from pathlib import Path
 from typing import Dict
 
 import api_config as cfg
 import torch
 from fastapi import FastAPI
-from inference import expand_abbreviation, get_invert_mapping
+from inference import check_model, expand_abbreviation, get_invert_mapping
+from loguru import logger
 
 app = FastAPI()
 
@@ -15,6 +17,9 @@ inverted_dict = get_invert_mapping()
 async def expand_sentence(sentence: str) -> Dict:
     global loaded_model
     modelpath = f"{cfg.MODELDIR}/{cfg.MODELVERSION}trainedmodel.pt"
+
+    modelpath = str(check_model(Path(modelpath)))
+    logger.info(f"using {modelpath}")
 
     if loaded_model is None:
         # lazy loading the model

@@ -142,9 +142,18 @@ check-lfs:
 		exit 1; \
 	fi
 
-download-model: check-lfs assets/model/models--CLTL--MedRoBERTa.nl
-
-assets/model/models--CLTL--MedRoBERTa.nl:
+download-model: check-lfs
 	@echo "$(GREEN)Downloading MedRoBERTa.nl model...$(NC)"
-	git clone https://huggingface.co/CLTL/MedRoBERTa.nl.git assets/model/models--CLTL--MedRoBERTa.nl
+	@if [ -d "assets/model/models--CLTL--MedRoBERTa.nl" ]; then \
+		cd assets/model/models--CLTL--MedRoBERTa.nl && git pull; \
+	else \
+		git clone https://huggingface.co/CLTL/MedRoBERTa.nl.git assets/model/models--CLTL--MedRoBERTa.nl; \
+	fi
 
+
+# download-model: check-lfs assets/model/models--CLTL--MedRoBERTa.nl
+#
+# assets/model/models--CLTL--MedRoBERTa.nl:
+# 	@echo "$(GREEN)Downloading MedRoBERTa.nl model...$(NC)"
+# 	git clone https://huggingface.co/CLTL/MedRoBERTa.nl.git assets/model/models--CLTL--MedRoBERTa.nl
+#
