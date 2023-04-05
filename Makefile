@@ -119,8 +119,8 @@ lint: $(VENV)/bin/activate
 
 format: $(VENV)/bin/activate
 	@echo "$(GREEN)Formatting the code$(NC)"
-	$(VENV)/bin/black pipeline
 	$(VENV)/bin/isort -v pipeline
+	$(VENV)/bin/black pipeline
 	@echo "$(GREEN)Finished formatting the code$(NC)"
 
 tail:
@@ -138,7 +138,7 @@ big: big_corpus.txt
 
 check-lfs:
 	@if ! git lfs env >/dev/null 2>&1; then \
-		echo "Git LFS is not installed. Please run 'make install-lfs' to install it."; \
+		echo "Git LFS is not installed. Please install for your system"; \
 		exit 1; \
 	fi
 
@@ -150,10 +150,3 @@ download-model: check-lfs
 		git clone https://huggingface.co/CLTL/MedRoBERTa.nl.git assets/model/models--CLTL--MedRoBERTa.nl; \
 	fi
 
-
-# download-model: check-lfs assets/model/models--CLTL--MedRoBERTa.nl
-#
-# assets/model/models--CLTL--MedRoBERTa.nl:
-# 	@echo "$(GREEN)Downloading MedRoBERTa.nl model...$(NC)"
-# 	git clone https://huggingface.co/CLTL/MedRoBERTa.nl.git assets/model/models--CLTL--MedRoBERTa.nl
-#
